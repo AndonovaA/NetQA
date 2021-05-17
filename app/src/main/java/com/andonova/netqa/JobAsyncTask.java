@@ -20,29 +20,29 @@ public class JobAsyncTask extends AsyncTask<List<JobObject>, Void, String> {
     protected String doInBackground(List<JobObject>... lists) {
 
         List<JobObject> jobs = lists[0];
-        String pingResult = "";
+        StringBuilder pingResult;
+        JobObject job = jobs.get(0);
 
         try {
-            JobObject job = jobs.get(0);
             //PING job:
             if(job.getJobType().equals("PING")){
-                String pingCmd = "ping -s "+ job.getPacketSize() +" -c "+ job.getNumPackets() +" -i "+ job.getJobPeriod() + " "+ job.getHostAddress();
-                pingResult = "";
+                String pingCmd = "ping -c "+ job.getNumPackets() +" -s "+ job.getPacketSize() +" "+ job.getHostAddress();
+                pingResult = new StringBuilder();
                 Runtime r = Runtime.getRuntime();
                 Process p = r.exec(pingCmd);
                 BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
                 String inputLine;
                 while ((inputLine = in.readLine()) != null) {
-                    pingResult += inputLine;
+                    pingResult.append(inputLine);
                 }
                 in.close();
+                Log.i("JobAsyncTask", String.valueOf(pingResult));
+                return String.valueOf(pingResult);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        // Return a String result
-        return pingResult;
+        return "empty string";
     }
 
     /**
@@ -51,7 +51,7 @@ public class JobAsyncTask extends AsyncTask<List<JobObject>, Void, String> {
      */
     @Override
     protected void onPostExecute(String result) {
-        Log.i("asyncTaskClass", "Result from the job: "+ result);
+        Log.i("JobAsyncTask", "Result from the job: "+ result);
     }
 
     /**
