@@ -6,6 +6,10 @@ import com.andonova.netqa.models.JobObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 
 public class JobAsyncTask extends AsyncTask<List<JobObject>, Void, String> {
@@ -36,22 +40,52 @@ public class JobAsyncTask extends AsyncTask<List<JobObject>, Void, String> {
                     pingResult.append(inputLine);
                 }
                 in.close();
-                Log.i("JobAsyncTask", String.valueOf(pingResult));
-                return String.valueOf(pingResult);
+                Log.i("JobAsyncTask", "***** Result from the job: "+ pingResult);
+
+                //HTTP POST:
+                try {
+                    URL url = new URL ("http://192.168.0.176:5000/postresults");
+                    HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                    con.setRequestMethod("POST");
+                    con.setRequestProperty("Content-Type", "application/json; utf-8");
+                    con.setRequestProperty("Accept", " */* ");
+                    con.setDoOutput(true);
+                    /*            {
+                                    "result":"tekst na rezultatot"
+                                  }                                                                 */
+                    String jsonInputString = " {\"result\": \"" + pingResult + " \"} ";
+                    try(OutputStream os = con.getOutputStream()) {
+                        byte[] input = jsonInputString.getBytes("utf-8");
+                        os.write(input, 0, input.length);
+                    }
+                    Log.i("JobAsyncTask", "****** Result: "+ jsonInputString);
+                    StringBuilder response = new StringBuilder();
+                    try(BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), "utf-8"))) {
+                        String responseLine = null;
+                        while ((responseLine = br.readLine()) != null) {
+                            response.append(responseLine.trim());
+                        }
+                        Log.i("JobAsyncTask", "****** Response after POST: "+ con.getResponseCode() + " "+ con.getResponseMessage());
+                        return response.toString();
+                    }
+                }catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-        } catch (IOException e) {
+        }catch (IOException e) {
             e.printStackTrace();
         }
         return "empty string";
     }
 
     /**
-     * Process results from the doInBackground method. Writes results to log!!
+     * Process results from the doInBackground method.
      * @param result The string returned from the doInBackground method !!!
      */
     @Override
     protected void onPostExecute(String result) {
-        Log.i("JobAsyncTask", "Result from the job: "+ result);
+        //Log.i("JobAsyncTask", "Result: "+ result);
+
     }
 
     /**

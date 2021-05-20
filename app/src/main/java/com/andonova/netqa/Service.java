@@ -57,7 +57,7 @@ public class Service extends android.app.Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.i(TAG, "Service onCreate");
+        Log.i(TAG, "**************Service onCreate*******************");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             restartForeground();    // the function is declared under
         }
@@ -67,7 +67,7 @@ public class Service extends android.app.Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        Log.i(TAG, "Service onBind");
+        Log.i(TAG, "***********Service onBind***********************");
         return null;
     }
 
@@ -75,7 +75,7 @@ public class Service extends android.app.Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
 
-        Log.i(TAG, "restarting Service! ");
+        Log.i(TAG, "***************** restarting Service! *****************");
 
         // it has been killed by Android and now it is restarted. We must make sure to have reinitialised everything
         if (intent == null) {
@@ -105,15 +105,15 @@ public class Service extends android.app.Service {
      */
     public void restartForeground() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            Log.i(TAG, "restarting foreground");
+            Log.i(TAG, "************** restarting foreground ***************************");
             //Foreground services must display a Notification
             try {
                 Notification notification = new Notification();
                 startForeground(NOTIFICATION_ID, notification.setNotification(this, "Service notification", "This is the service's notification", R.drawable.ic_sleep));
-                Log.i(TAG, "restarting foreground successful");
+                Log.i(TAG, "******************* restarting foreground successful ************************");
                 startTimer(); //HERE !!!
             } catch (Exception e) {
-                Log.e(TAG, "Error in notification " + e.getMessage());
+                Log.e(TAG, "********** Error in notification *************" + e.getMessage());
             }
         }
     }
@@ -121,7 +121,7 @@ public class Service extends android.app.Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.i(TAG, "Service onDestroy");
+        Log.i(TAG, "****** Service onDestroy **********");
         //onDestroy is called when the service is stopped by the app (i.e. the app is killed wither by Android or by the user).
         //In this case, the service sends a message(custom intent) to the BroadcastReceiver which will RESTART THE SERVICE
         // after the service stop (it is an asynchronous call so it will not be affected by the death of the service).
@@ -137,7 +137,7 @@ public class Service extends android.app.Service {
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
-        Log.i(TAG, "onTaskRemoved called");
+        Log.i(TAG, "********* onTaskRemoved called **************");
         // restart the never ending service
         Intent broadcastIntent = new Intent(Globals.RESTART_INTENT);
         sendBroadcast(broadcastIntent);
@@ -162,7 +162,7 @@ public class Service extends android.app.Service {
     private static TimerTask timerTask;
 
     public void startTimer() {
-        Log.i(TAG, "Starting timer");
+        Log.i(TAG, "**************************** Starting timer **********************************");
 
         //set a new Timer - if one is already running, cancel it to avoid two running at the same time
         stopTimerTask();
@@ -171,16 +171,16 @@ public class Service extends android.app.Service {
         //initialize the TimerTask's job
         initializeTimerTask();
 
-        Log.i(TAG, "Scheduling...");
+        Log.i(TAG, "************** Scheduling... ***********************");
         //schedule the timer, to wake up every 10 minutes
-        timer.schedule(timerTask, 1000, 600000);
+        timer.schedule(timerTask, 10000, 60000); //1 min for testing
     }
 
     /**
      * it sets the timer to send request to the API, every 10 minutes
      */
     public void initializeTimerTask() {
-        Log.i(TAG, "initialising TimerTask");
+        Log.i(TAG, "****************** initialising TimerTask ****************");
         timerTask = new TimerTask() {
             public void run() {
                 // Check the status of the network connection
@@ -193,7 +193,7 @@ public class Service extends android.app.Service {
                 }
                 else {
                     // Otherwise write in the log
-                    Log.i(TAG, "No internet connectivity!");
+                    Log.i(TAG, "*********** No internet connectivity! ****************");
                 }
             }
         };
@@ -224,13 +224,13 @@ public class Service extends android.app.Service {
         // Start the queue
         requestQueue.start();
 
-        String url ="http://10.0.2.2:5000/getjobs";
+        String url = "http://192.168.0.176:5000/getjobs/hardware";
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
                 Request.Method.GET,
                 url,
                 null,
                 response -> {
-                    Log.i(TAG, "Successfully loaded json!");
+                    Log.i(TAG, "************* Successfully loaded json! **************");
                     //response is type - json array
                     GsonBuilder gsonb = new GsonBuilder();
                     Gson gson = gsonb.create();
@@ -243,7 +243,7 @@ public class Service extends android.app.Service {
                     }
                 },
                 error -> {
-                    Log.i(TAG, "Error loading json!");
+                    Log.i(TAG, "****** Error loading json! ******");
                 }
         );
         // Add the request to the RequestQueue.
