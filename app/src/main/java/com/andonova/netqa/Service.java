@@ -2,6 +2,7 @@ package com.andonova.netqa;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -188,7 +189,6 @@ public class Service extends android.app.Service {
                 NetworkInfo networkInfo = connMgr.getActiveNetworkInfo(); //describes the status of a network interface of a given type (currently either mobile or Wi-Fi)
                 // If the network interface is active and connected, send a query and get reply!
                 if(networkInfo != null && networkInfo.isConnected()){
-                    //Do some job in thread, based on the response. We have the response in list "jobs"
                     sendRequest();
                 }
                 else {
@@ -236,10 +236,10 @@ public class Service extends android.app.Service {
                     Gson gson = gsonb.create();
                     jobs = Arrays.asList(gson.fromJson(String.valueOf(response), JobObject[].class));
                     Log.i(TAG, jobs.get(0).toString()); //response is in jobs.get(0)
-                    //Let's do the job:
+                    //We have response, now let's do the job:
                     if(jobs != null){
                         Log.i(TAG, "Let's ping..");
-                        new JobAsyncTask().execute(jobs); //params=jobs !!!
+                        new JobAsyncTask(getApplicationContext()).execute(jobs); //params=jobs !!!
                     }
                 },
                 error -> {

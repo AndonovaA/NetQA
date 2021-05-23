@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">NetQA</string>
+    <string name="preference_file_key">com.andonova.netqa.PREFERENCE_JOB_KEY</string>
 </resources>
